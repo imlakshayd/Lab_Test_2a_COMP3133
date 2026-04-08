@@ -1,0 +1,26 @@
+<div class="filter-bar">
+  <mat-form-field appearance="outline">
+    <mat-label>Launch Year</mat-label>
+    <mat-select [(ngModel)]="selectedYear" (selectionChange)="applyFilters()">
+      <mat-option value="">All Years</mat-option>
+      <mat-option *ngFor="let year of availableYears" [value]="year">
+        {{ year }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Launch Status</mat-label>
+    <mat-select [(ngModel)]="selectedSuccess" (selectionChange)="applyFilters()">
+      <mat-option value="">All</mat-option>
+      <mat-option value="true">Successful</mat-option>
+      <mat-option value="false">Failed</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button mat-stroked-button color="primary" (click)="clearFilters()"
+          *ngIf="selectedYear || selectedSuccess">
+    <mat-icon>clear</mat-icon>
+    Clear Filters
+  </button>
+</div>

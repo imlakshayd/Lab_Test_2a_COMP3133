@@ -1,0 +1,59 @@
+<div class="mission-list-container">
+  <app-mission-filter
+    [launches]="launches"
+    (filterChanged)="onFilterChanged($event)">
+  </app-mission-filter>
+
+  <div class="results-count" *ngIf="!isLoading && !errorMessage">
+    Showing {{ filteredLaunches.length }} of {{ launches.length }} missions
+  </div>
+
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Loading SpaceX missions...</p>
+  </div>
+
+  <div class="error-container" *ngIf="errorMessage">
+    <p class="error-text">{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="loadLaunches()">Retry</button>
+  </div>
+
+  <div class="cards-grid" *ngIf="!isLoading && !errorMessage">
+    <mat-card *ngFor="let launch of filteredLaunches"
+              class="mission-card"
+              (click)="viewDetails(launch.flight_number)">
+      <mat-card-header>
+        <img mat-card-avatar
+             [src]="launch.links.mission_patch_small || 'https://via.placeholder.com/40'"
+             [alt]="launch.mission_name"
+             class="mission-patch-small">
+        <mat-card-title>{{ launch.mission_name }}</mat-card-title>
+        <mat-card-subtitle>Flight #{{ launch.flight_number }} &bull; {{ launch.launch_year }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="mission-info">
+          <p><strong>Rocket:</strong> {{ launch.rocket.rocket_name }}</p>
+          <p><strong>Launch Site:</strong> {{ launch.launch_site.site_name }}</p>
+          <p class="mission-details-text" *ngIf="launch.details">
+            {{ launch.details | slice:0:120 }}{{ launch.details && launch.details.length > 120 ? '...' : '' }}
+          </p>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <span class="status-badge"
+              [ngClass]="{
+                'status-success': launch.launch_success === true,
+                'status-failed': launch.launch_success === false,
+                'status-upcoming': launch.launch_success === null
+              }">
+          {{ getStatusText(launch.launch_success) }}
+        </span>
+        <button mat-button color="primary" (click)="viewDetails(launch.flight_number); $event.stopPropagation()">
+          VIEW DETAILS
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

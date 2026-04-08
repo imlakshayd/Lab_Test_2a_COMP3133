@@ -1,0 +1,15 @@
+.filter-bar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 16px 0;
+
+  mat-form-field {
+    min-width: 180px;
+  }
+
+  button {
+    height: 40px;
+  }
+}

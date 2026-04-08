@@ -1,0 +1,168 @@
+<div class="details-container">
+  <button mat-button color="primary" (click)="goBack()" class="back-button">
+    <mat-icon>arrow_back</mat-icon> Back to Missions
+  </button>
+
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Loading mission details...</p>
+  </div>
+
+  <div class="error-container" *ngIf="errorMessage">
+    <p class="error-text">{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="goBack()">Back to List</button>
+  </div>
+
+  <div class="details-content" *ngIf="launch && !isLoading">
+    <div class="details-header">
+      <div class="patch-container">
+        <img [src]="launch.links.mission_patch || 'https://via.placeholder.com/200'"
+             [alt]="launch.mission_name"
+             class="mission-patch-large">
+      </div>
+      <div class="header-info">
+        <h1>{{ launch.mission_name }}</h1>
+        <p class="flight-number">Flight #{{ launch.flight_number }}</p>
+        <span class="status-badge"
+              [ngClass]="{
+                'status-success': launch.launch_success === true,
+                'status-failed': launch.launch_success === false,
+                'status-upcoming': launch.launch_success === null
+              }">
+          {{ getStatusText(launch.launch_success) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="details-grid">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Launch Information</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list>
+            <mat-list-item>
+              <span matListItemTitle>Launch Date</span>
+              <span matListItemLine>{{ launch.launch_date_utc | date:'medium' }}</span>
+            </mat-list-item>
+            <mat-list-item>
+              <span matListItemTitle>Launch Site</span>
+              <span matListItemLine>{{ launch.launch_site.site_name_long }}</span>
+            </mat-list-item>
+            <mat-list-item>
+              <span matListItemTitle>Launch Year</span>
+              <span matListItemLine>{{ launch.launch_year }}</span>
+            </mat-list-item>
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Rocket Details</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list>
+            <mat-list-item>
+              <span matListItemTitle>Rocket Name</span>
+              <span matListItemLine>{{ launch.rocket.rocket_name }}</span>
+            </mat-list-item>
+            <mat-list-item>
+              <span matListItemTitle>Rocket Type</span>
+              <span matListItemLine>{{ launch.rocket.rocket_type }}</span>
+            </mat-list-item>
+            <mat-list-item>
+              <span matListItemTitle>Rocket ID</span>
+              <span matListItemLine>{{ launch.rocket.rocket_id }}</span>
+            </mat-list-item>
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <mat-card *ngIf="launch.details" class="description-card">
+      <mat-card-header>
+        <mat-card-title>Mission Description</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="description-text">{{ launch.details }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="launch.launch_success === false && launch.launch_failure_details" class="failure-card">
+      <mat-card-header>
+        <mat-card-title>Failure Details</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p><strong>Time:</strong> {{ launch.launch_failure_details.time }} seconds</p>
+        <p *ngIf="launch.launch_failure_details.altitude">
+          <strong>Altitude:</strong> {{ launch.launch_failure_details.altitude }} km
+        </p>
+        <p><strong>Reason:</strong> {{ launch.launch_failure_details.reason }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="links-card">
+      <mat-card-header>
+        <mat-card-title>External Links</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="links-row">
+          <a *ngIf="launch.links.article_link"
+             mat-raised-button color="primary"
+             [href]="launch.links.article_link"
+             target="_blank" rel="noopener noreferrer">
+            <mat-icon>article</mat-icon> Article
+          </a>
+          <a *ngIf="launch.links.wikipedia"
+             mat-raised-button
+             [href]="launch.links.wikipedia"
+             target="_blank" rel="noopener noreferrer">
+            <mat-icon>language</mat-icon> Wikipedia
+          </a>
+          <a *ngIf="launch.links.video_link"
+             mat-raised-button color="accent"
+             [href]="launch.links.video_link"
+             target="_blank" rel="noopener noreferrer">
+            <mat-icon>play_circle</mat-icon> Video
+          </a>
+          <a *ngIf="launch.links.presskit"
+             mat-raised-button
+             [href]="launch.links.presskit"
+             target="_blank" rel="noopener noreferrer">
+            <mat-icon>description</mat-icon> Press Kit
+          </a>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="launch.links.youtube_id" class="video-card">
+      <mat-card-header>
+        <mat-card-title>Launch Video</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="video-container">
+          <iframe [src]="getYoutubeEmbedUrl(launch.links.youtube_id) | safeUrl"
+                  frameborder="0"
+                  allowfullscreen
+                  title="Launch Video">
+          </iframe>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="launch.links.flickr_images && launch.links.flickr_images.length > 0" class="gallery-card">
+      <mat-card-header>
+        <mat-card-title>Mission Photos</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="gallery">
+          <img *ngFor="let img of launch.links.flickr_images"
+               [src]="img"
+               [alt]="launch.mission_name"
+               class="gallery-image">
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
